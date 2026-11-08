@@ -1,0 +1,11 @@
+node_modules/
+work/
+outputs/
+.env
+.env.*
+*.log
+*.har
+*.p12
+*.vscdb*
+token.json
+/config/

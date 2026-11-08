@@ -1,0 +1,60 @@
+name: WorkBuddy 每日签到
+description: CodeBuddy CN 签到、令牌自动续期与凭据采集。首次使用请先阅读 README。
+icon: checkmark.seal.fill
+env_schema:
+  WORKBUDDY_ACCESS_TOKEN:
+    name: 访问令牌 access_token
+    description: 首次导入使用，可填纯令牌或 Bearer 开头的值。不要填写 Cookie。
+  WORKBUDDY_REFRESH_TOKEN:
+    name: 刷新令牌 refresh_token
+    description: 建议填写，用于访问令牌过期时自动续期。
+  WORKBUDDY_UID:
+    name: 用户 ID
+    description: 对应原配置 uid 或请求头 X-User-Id；未知可留空。
+  WORKBUDDY_ENTERPRISE_ID:
+    name: 企业 ID
+    description: 对应 enterprise_id；个人账号通常留空。
+  WORKBUDDY_DOMAIN:
+    name: 账号 domain
+    description: 对应原配置 domain；只作 X-Domain 请求头，不改变请求目标。
+  WORKBUDDY_ACCOUNT_NAME:
+    name: 账号备注
+    default_value: WorkBuddy
+  WORKBUDDY_ACCOUNT_KEY:
+    name: 本地账号槽位
+    default_value: default
+    description: 默认 default。重新建档可换成 main2 等；不同槽位独立存储令牌。
+  WORKBUDDY_NOTIFY_SUCCESS:
+    name: 成功时通知
+    description: 默认开启。关闭后失败仍会通知。
+    options:
+      - "true"
+      - "false"
+scriptings:
+  - schedule:
+      name: WorkBuddy 每日签到
+      cron: 5 9 * * *
+      script_url: https://raw.githubusercontent.com/ZHT0711/egern-workbuddy-checkin/main/workbuddy.js
+      timeout: 180
+      update_interval: 86400
+  - http_request:
+      name: WorkBuddy Token 请求采集
+      match: ^https://www\.codebuddy\.cn/v2/
+      script_url: https://raw.githubusercontent.com/ZHT0711/egern-workbuddy-checkin/main/workbuddy.token.js
+      body_required: false
+      timeout: 10
+      update_interval: 86400
+  - http_response:
+      name: WorkBuddy Token 响应采集
+      match: ^https://www\.codebuddy\.cn/v2/plugin/auth/token(?:/refresh)?(?:\?|$)
+      script_url: https://raw.githubusercontent.com/ZHT0711/egern-workbuddy-checkin/main/workbuddy.token.js
+      body_required: true
+      max_size: 131072
+      timeout: 10
+      update_interval: 86400
+mitm:
+  hostnames:
+    includes:
+      - www.codebuddy.cn
+homepage: https://github.com/ZHT0711/egern-workbuddy-checkin
+manual: https://github.com/ZHT0711/egern-workbuddy-checkin/blob/main/README.md

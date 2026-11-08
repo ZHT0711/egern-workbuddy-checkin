@@ -1,0 +1,33 @@
+name: WorkBuddy 本机 Token 采集
+description: 在 iPhone Egern 本地采集 Bearer 和登录/刷新响应，与 WorkBuddy 每日签到共用存储。
+icon: key.fill
+env_schema:
+  WORKBUDDY_ACCOUNT_KEY:
+    name: 账号槽位
+    default_value: default
+    description: 必须与签到脚本相同，默认 default。
+  WORKBUDDY_ACCOUNT_NAME:
+    name: 账号备注
+    default_value: WorkBuddy
+scriptings:
+  - http_request:
+      name: WorkBuddy Token 请求采集
+      match: ^https://www\.codebuddy\.cn/v2/
+      script_url: https://raw.githubusercontent.com/ZHT0711/egern-workbuddy-checkin/main/workbuddy.token.js
+      body_required: false
+      timeout: 10
+      update_interval: 86400
+  - http_response:
+      name: WorkBuddy Token 响应采集
+      match: ^https://www\.codebuddy\.cn/v2/plugin/auth/token(?:/refresh)?(?:\?|$)
+      script_url: https://raw.githubusercontent.com/ZHT0711/egern-workbuddy-checkin/main/workbuddy.token.js
+      body_required: true
+      max_size: 131072
+      timeout: 10
+      update_interval: 86400
+mitm:
+  hostnames:
+    includes:
+      - www.codebuddy.cn
+homepage: https://github.com/ZHT0711/egern-workbuddy-checkin
+manual: https://github.com/ZHT0711/egern-workbuddy-checkin/blob/main/TOKEN-README.md
