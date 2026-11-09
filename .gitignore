@@ -1,11 +1,11 @@
-node_modules/
-work/
-outputs/
+# Local credentials, exports and diagnostics must never be committed.
 .env
 .env.*
-*.log
-*.har
-*.p12
-*.vscdb*
+*.local.js
+*.local.yaml
+*.local.yml
 token.json
-/config/
+config/token.json
+*.log
+.DS_Store
+node_modules/

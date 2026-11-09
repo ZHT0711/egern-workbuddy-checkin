@@ -4,7 +4,16 @@
 
 使用 Egern 当前官方文档的原生 `export default async function(ctx)` API，无第三方运行库。主签到脚本是 `workbuddy.js`；新增的独立采集脚本为 `workbuddy.token.js`，手机本地抓取方法见 `TOKEN-README.md`。需要使用支持该原生 API 的 Egern；不适用于只提供 `$httpClient` / `$persistentStore` 的旧运行方式。
 
-## 推荐安装：Egern 远程模块
+## 新增：成长计划扩展（v1.1.0，实验性）
+
+现可另行安装 **已完成任务领奖、Buddy 旅行、已达标活跃档位兑换**。原签到代码及原模块保持不变；新功能使用独立成长网页登录态，**首次默认 `preview`，不是安装后直接提交领取**。
+
+- 已有原签到模块：额外安装 `workbuddy.growth.module.yaml`。
+- 想用一个组合模块：安装 `workbuddy.plus.module.yaml`，同时停用旧完整模块及其他重复成长调度。
+- 先阅读 [成长扩展安装与启用说明](GROWTH-README.md)。不刷任务、不自动同意规则、不抽奖、不使用补登卡；会溢出补登卡的兑换默认跳过。
+- 新功能已通过离线模拟回归，但 **未用真实账号/Egern 验证**，见 [验证记录](VALIDATION.md)。不要把原签到 token 当作成长网页登录态。
+
+## 原签到安装：Egern 远程模块
 
 在 Egern 的「工具 → 模块 → +」中粘贴以下地址：
 

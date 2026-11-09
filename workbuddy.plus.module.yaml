@@ -1,0 +1,128 @@
+name: WorkBuddy 签到 + 成长计划
+description: 保留原每日签到，新增独立登录态的任务领奖、旅行和活跃兑换；成长功能默认 preview。
+icon: checkmark.seal.fill
+env_schema:
+  WORKBUDDY_ACCESS_TOKEN:
+    name: 访问令牌 access_token
+    description: 首次导入使用，可填纯令牌或 Bearer 开头的值。不要填写 Cookie。
+  WORKBUDDY_REFRESH_TOKEN:
+    name: 刷新令牌 refresh_token
+    description: 建议填写，用于访问令牌过期时自动续期。
+  WORKBUDDY_UID:
+    name: 用户 ID
+    description: 对应原配置 uid 或请求头 X-User-Id；未知可留空。
+  WORKBUDDY_ENTERPRISE_ID:
+    name: 企业 ID
+    description: 对应 enterprise_id；个人账号通常留空。
+  WORKBUDDY_DOMAIN:
+    name: 账号 domain
+    description: 对应原配置 domain；只作 X-Domain 请求头，不改变请求目标。
+  WORKBUDDY_ACCOUNT_NAME:
+    name: 账号备注
+    default_value: WorkBuddy
+  WORKBUDDY_ACCOUNT_KEY:
+    name: 账号槽位
+    default_value: default
+    description: 成长登录态与签到隔离；换账号请换槽位，不要并发运行同槽位。
+  WORKBUDDY_NOTIFY_SUCCESS:
+    name: 成功时通知
+    description: 默认开启。关闭后失败仍会通知。
+    options:
+    - 'true'
+    - 'false'
+  WORKBUDDY_GROWTH_MODE:
+    name: 成长运行模式
+    default_value: preview
+    description: 首次先 preview 核验。确认账号、活动资格和协议后改 run；off 停用此扩展。
+    options:
+    - preview
+    - run
+    - 'off'
+  WORKBUDDY_GROWTH_COOKIE:
+    name: 成长页面 Cookie（可选手填）
+    description: 优先留空自动采集。只用于 www.workbuddy.cn；不是原签到 Bearer。
+  WORKBUDDY_GROWTH_BEARER:
+    name: 小程序成长 Bearer（可选）
+    description: 仅支持成长页小程序请求实际使用的令牌，与 Cookie 二选一；不要填写桌面签到令牌。
+  WORKBUDDY_GROWTH_XSRF_TOKEN:
+    name: X-XSRF-TOKEN（有则填）
+    description: 自动采集原请求对应头；手动导入时按实际请求填写。
+  WORKBUDDY_GROWTH_ENTERPRISE_ID:
+    name: 成长企业 ID（可选）
+    description: 仅按成长请求实际值填写，个人账号通常留空。
+  WORKBUDDY_GROWTH_TRAVEL:
+    name: 旅行领奖及派出
+    default_value: 'true'
+    options:
+    - 'true'
+    - 'false'
+  WORKBUDDY_GROWTH_TASKS:
+    name: 已完成任务领奖
+    default_value: 'true'
+    options:
+    - 'true'
+    - 'false'
+  WORKBUDDY_GROWTH_REDEEM:
+    name: 已达标活跃兑换
+    default_value: 'true'
+    options:
+    - 'true'
+    - 'false'
+  WORKBUDDY_GROWTH_ACCEPT_CODES:
+    name: 接取指定任务（可选）
+    description: 默认不自动接任务。如需接取，填写任务 code，以逗号分隔；不会代做任务。
+  WORKBUDDY_GROWTH_TRAVEL_LOCATION:
+    name: 旅行地点 ID（可选）
+    description: 留空使用服务端配置中的可用地点；指定时必须匹配服务端配置。
+  WORKBUDDY_GROWTH_MAX_WRITES:
+    name: 每次最多提交次数
+    default_value: '6'
+    description: 只允许 1–8，防止批量写请求；超出的任务留待下次。
+  WORKBUDDY_GROWTH_NOTIFY_IDLE:
+    name: 没有奖励也通知
+    default_value: 'false'
+    options:
+    - 'true'
+    - 'false'
+scriptings:
+- schedule:
+    name: WorkBuddy 每日签到
+    cron: 5 9 * * *
+    script_url: https://raw.githubusercontent.com/ZHT0711/egern-workbuddy-checkin/main/workbuddy.js
+    timeout: 180
+    update_interval: 86400
+- http_request:
+    name: WorkBuddy Token 请求采集
+    match: ^https://www\.codebuddy\.cn/v2/
+    script_url: https://raw.githubusercontent.com/ZHT0711/egern-workbuddy-checkin/main/workbuddy.token.js
+    body_required: false
+    timeout: 10
+    update_interval: 86400
+- http_response:
+    name: WorkBuddy Token 响应采集
+    match: ^https://www\.codebuddy\.cn/v2/plugin/auth/token(?:/refresh)?(?:\?|$)
+    script_url: https://raw.githubusercontent.com/ZHT0711/egern-workbuddy-checkin/main/workbuddy.token.js
+    body_required: true
+    max_size: 131072
+    timeout: 10
+    update_interval: 86400
+- schedule:
+    name: WorkBuddy 成长计划
+    cron: 17 8-23 * * *
+    script_url: https://raw.githubusercontent.com/ZHT0711/egern-workbuddy-checkin/main/workbuddy.growth.js
+    timeout: 180
+    update_interval: 86400
+- http_request:
+    name: WorkBuddy 成长登录态采集
+    match: ^https://www\.workbuddy\.cn/(?:v2/)?activity/growth/
+    script_url: https://raw.githubusercontent.com/ZHT0711/egern-workbuddy-checkin/main/workbuddy.growth.js
+    body_required: false
+    timeout: 10
+    update_interval: 86400
+mitm:
+  hostnames:
+    includes:
+    - www.codebuddy.cn
+    - www.workbuddy.cn
+homepage: https://github.com/ZHT0711/egern-workbuddy-checkin
+manual: https://github.com/ZHT0711/egern-workbuddy-checkin/blob/main/GROWTH-README.md
